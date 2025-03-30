@@ -3,6 +3,8 @@ package com.fiap.cinema_api.service;
 import com.fiap.cinema_api.model.Filme;
 import com.fiap.cinema_api.repository.FilmeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +17,10 @@ public class FilmeService {
 
     public List<Filme> listarTodos() {
         return repository.findAll();
+    }
+
+    public Page<Filme> listarTodos(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Filme buscarPorId(Long id) {

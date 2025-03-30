@@ -4,9 +4,15 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import lombok.*;
+
 import java.time.LocalDate;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Avaliacao {
 
     @Id
@@ -29,5 +35,4 @@ public class Avaliacao {
     @ManyToOne
     @JoinColumn(name = "filme_id")
     private Filme filme;
-
 }

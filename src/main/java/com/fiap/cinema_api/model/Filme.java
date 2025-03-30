@@ -2,8 +2,13 @@ package com.fiap.cinema_api.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import lombok.*;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Filme {
 
     @Id
@@ -19,6 +24,6 @@ public class Filme {
     private String genero;
 
     private Integer anoLancamento;
-    private Integer duracaoMin;
 
+    private Integer duracaoMin;
 }

@@ -1,21 +1,22 @@
 package com.fiap.cinema_api.controller;
 
-import com.fiap.cinema_api.dto.AvaliacaoRequest;
-import com.fiap.cinema_api.dto.AvaliacaoResponse;
-import com.fiap.cinema_api.model.Avaliacao;
-import com.fiap.cinema_api.model.Filme;
-import com.fiap.cinema_api.model.Usuario;
-import com.fiap.cinema_api.service.AvaliacaoService;
-import com.fiap.cinema_api.service.FilmeService;
-import com.fiap.cinema_api.service.UsuarioService;
+import com.fiap.cinema_api.dto.*;
+import com.fiap.cinema_api.model.*;
+import com.fiap.cinema_api.service.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 @RestController
 @RequestMapping("/avaliacoes")
+@Tag(name = "Avaliações", description = "Endpoints para avaliações de filmes")
 public class AvaliacaoController {
 
     @Autowired
@@ -28,86 +29,44 @@ public class AvaliacaoController {
     private FilmeService filmeService;
 
     @GetMapping
+    @Operation(summary = "Listar todas as avaliações")
     public List<AvaliacaoResponse> listar() {
-        return service.listarTodas().stream()
-                .map(av -> new AvaliacaoResponse(
-                        av.getId(),
-                        av.getNota(),
-                        av.getComentario(),
-                        av.getData(),
-                        new com.fiap.cinema_api.dto.UsuarioResponse(
-                                av.getUsuario().getId(),
-                                av.getUsuario().getNome(),
-                                av.getUsuario().getEmail(),
-                                av.getUsuario().getDataCriacao()
-                        ),
-                        new com.fiap.cinema_api.dto.FilmeResponse(
-                                av.getFilme().getId(),
-                                av.getFilme().getTitulo(),
-                                av.getFilme().getDiretor(),
-                                av.getFilme().getGenero(),
-                                av.getFilme().getAnoLancamento(),
-                                av.getFilme().getDuracaoMin()
-                        )
-                ))
-                .toList();
+        return service.listarTodas().stream().map(this::toResponse).toList();
     }
 
     @GetMapping("/{id}")
-    public AvaliacaoResponse buscar(@PathVariable Long id) {
+    @Operation(summary = "Buscar uma avaliação por ID")
+    public EntityModel<AvaliacaoResponse> buscar(@PathVariable Long id) {
         Avaliacao av = service.buscarPorId(id);
+        AvaliacaoResponse response = toResponse(av);
+        return EntityModel.of(response,
+                linkTo(methodOn(AvaliacaoController.class).buscar(id)).withSelfRel(),
+                linkTo(methodOn(AvaliacaoController.class).listar()).withRel("todas"));
+    }
+
+    @PostMapping
+    @Operation(summary = "Criar uma nova avaliação")
+    public AvaliacaoResponse criar(@RequestBody @Valid AvaliacaoRequest request) {
+        Usuario usuario = usuarioService.buscarPorId(request.usuarioId());
+        Filme filme = filmeService.buscarPorId(request.filmeId());
+        Avaliacao av = new Avaliacao(null, request.nota(), request.comentario(), null, usuario, filme);
+        return toResponse(service.criar(av));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Excluir uma avaliação por ID")
+    public void deletar(@PathVariable Long id) {
+        service.deletar(id);
+    }
+
+    private AvaliacaoResponse toResponse(Avaliacao av) {
         return new AvaliacaoResponse(
                 av.getId(),
                 av.getNota(),
                 av.getComentario(),
                 av.getData(),
-                new com.fiap.cinema_api.dto.UsuarioResponse(
-                        av.getUsuario().getId(),
-                        av.getUsuario().getNome(),
-                        av.getUsuario().getEmail(),
-                        av.getUsuario().getDataCriacao()
-                ),
-                new com.fiap.cinema_api.dto.FilmeResponse(
-                        av.getFilme().getId(),
-                        av.getFilme().getTitulo(),
-                        av.getFilme().getDiretor(),
-                        av.getFilme().getGenero(),
-                        av.getFilme().getAnoLancamento(),
-                        av.getFilme().getDuracaoMin()
-                )
+                new UsuarioResponse(av.getUsuario().getId(), av.getUsuario().getNome(), av.getUsuario().getEmail(), av.getUsuario().getDataCriacao()),
+                new FilmeResponse(av.getFilme().getId(), av.getFilme().getTitulo(), av.getFilme().getDiretor(), av.getFilme().getGenero(), av.getFilme().getAnoLancamento(), av.getFilme().getDuracaoMin())
         );
-    }
-
-    @PostMapping
-    public AvaliacaoResponse criar(@RequestBody @Valid AvaliacaoRequest request) {
-        Usuario usuario = usuarioService.buscarPorId(request.usuarioId());
-        Filme filme = filmeService.buscarPorId(request.filmeId());
-        Avaliacao av = new Avaliacao(null, request.nota(), request.comentario(), null, usuario, filme);
-        Avaliacao salvo = service.criar(av);
-        return new AvaliacaoResponse(
-                salvo.getId(),
-                salvo.getNota(),
-                salvo.getComentario(),
-                salvo.getData(),
-                new com.fiap.cinema_api.dto.UsuarioResponse(
-                        salvo.getUsuario().getId(),
-                        salvo.getUsuario().getNome(),
-                        salvo.getUsuario().getEmail(),
-                        salvo.getUsuario().getDataCriacao()
-                ),
-                new com.fiap.cinema_api.dto.FilmeResponse(
-                        salvo.getFilme().getId(),
-                        salvo.getFilme().getTitulo(),
-                        salvo.getFilme().getDiretor(),
-                        salvo.getFilme().getGenero(),
-                        salvo.getFilme().getAnoLancamento(),
-                        salvo.getFilme().getDuracaoMin()
-                )
-        );
-    }
-
-    @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
-        service.deletar(id);
     }
 }

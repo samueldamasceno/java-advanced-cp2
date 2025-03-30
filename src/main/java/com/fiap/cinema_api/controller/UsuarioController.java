@@ -1,7 +1,10 @@
 package com.fiap.cinema_api.controller;
 
+import com.fiap.cinema_api.dto.UsuarioRequest;
+import com.fiap.cinema_api.dto.UsuarioResponse;
 import com.fiap.cinema_api.model.Usuario;
 import com.fiap.cinema_api.service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,23 +18,30 @@ public class UsuarioController {
     private UsuarioService service;
 
     @GetMapping
-    public List<Usuario> listar() {
-        return service.listarTodos();
+    public List<UsuarioResponse> listar() {
+        return service.listarTodos().stream()
+                .map(u -> new UsuarioResponse(u.getId(), u.getNome(), u.getEmail(), u.getDataCriacao()))
+                .toList();
     }
 
     @GetMapping("/{id}")
-    public Usuario buscar(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public UsuarioResponse buscar(@PathVariable Long id) {
+        Usuario u = service.buscarPorId(id);
+        return new UsuarioResponse(u.getId(), u.getNome(), u.getEmail(), u.getDataCriacao());
     }
 
     @PostMapping
-    public Usuario criar(@RequestBody Usuario usuario) {
-        return service.criar(usuario);
+    public UsuarioResponse criar(@RequestBody @Valid UsuarioRequest request) {
+        Usuario u = new Usuario(null, request.nome(), request.email(), request.senha(), null);
+        Usuario salvo = service.criar(u);
+        return new UsuarioResponse(salvo.getId(), salvo.getNome(), salvo.getEmail(), salvo.getDataCriacao());
     }
 
     @PutMapping("/{id}")
-    public Usuario atualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
-        return service.atualizar(id, usuario);
+    public UsuarioResponse atualizar(@PathVariable Long id, @RequestBody @Valid UsuarioRequest request) {
+        Usuario atualizado = new Usuario(null, request.nome(), request.email(), request.senha(), null);
+        Usuario salvo = service.atualizar(id, atualizado);
+        return new UsuarioResponse(salvo.getId(), salvo.getNome(), salvo.getEmail(), salvo.getDataCriacao());
     }
 
     @DeleteMapping("/{id}")

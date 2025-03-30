@@ -1,6 +1,7 @@
 package com.fiap.cinema_api.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 @Entity
 public class Filme {
@@ -9,9 +10,14 @@ public class Filme {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank
     private String titulo;
+
     private String diretor;
+
+    @NotBlank
     private String genero;
+
     private Integer anoLancamento;
     private Integer duracaoMin;
 

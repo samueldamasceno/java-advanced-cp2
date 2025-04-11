@@ -26,8 +26,6 @@ public class Avaliacao {
     @Size(max = 500)
     private String comentario;
 
-    private LocalDate data = LocalDate.now();
-
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;

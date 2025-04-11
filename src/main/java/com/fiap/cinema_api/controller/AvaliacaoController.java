@@ -19,27 +19,21 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @Tag(name = "Avaliações", description = "Endpoints para avaliações de filmes")
 public class AvaliacaoController {
 
-    @Autowired
-    private AvaliacaoService service;
-
-    @Autowired
-    private UsuarioService usuarioService;
-
-    @Autowired
-    private FilmeService filmeService;
+    @Autowired private AvaliacaoService avaliacaoService;
+    @Autowired private UsuarioService usuarioService;
+    @Autowired private FilmeService filmeService;
 
     @GetMapping
     @Operation(summary = "Listar todas as avaliações")
     public List<AvaliacaoResponse> listar() {
-        return service.listarTodas().stream().map(this::toResponse).toList();
+        return avaliacaoService.listarTodas().stream().map(this::toResponse).toList();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Buscar uma avaliação por ID")
     public EntityModel<AvaliacaoResponse> buscar(@PathVariable Long id) {
-        Avaliacao av = service.buscarPorId(id);
-        AvaliacaoResponse response = toResponse(av);
-        return EntityModel.of(response,
+        Avaliacao av = avaliacaoService.buscarPorId(id);
+        return EntityModel.of(toResponse(av),
                 linkTo(methodOn(AvaliacaoController.class).buscar(id)).withSelfRel(),
                 linkTo(methodOn(AvaliacaoController.class).listar()).withRel("todas"));
     }
@@ -49,14 +43,14 @@ public class AvaliacaoController {
     public AvaliacaoResponse criar(@RequestBody @Valid AvaliacaoRequest request) {
         Usuario usuario = usuarioService.buscarPorId(request.usuarioId());
         Filme filme = filmeService.buscarPorId(request.filmeId());
-        Avaliacao av = new Avaliacao(null, request.nota(), request.comentario(), null, usuario, filme);
-        return toResponse(service.criar(av));
+        Avaliacao av = new Avaliacao(null, request.nota(), request.comentario(), usuario, filme);
+        return toResponse(avaliacaoService.criar(av));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Excluir uma avaliação por ID")
     public void deletar(@PathVariable Long id) {
-        service.deletar(id);
+        avaliacaoService.deletar(id);
     }
 
     private AvaliacaoResponse toResponse(Avaliacao av) {
@@ -64,9 +58,8 @@ public class AvaliacaoController {
                 av.getId(),
                 av.getNota(),
                 av.getComentario(),
-                av.getData(),
-                new UsuarioResponse(av.getUsuario().getId(), av.getUsuario().getNome(), av.getUsuario().getEmail(), av.getUsuario().getDataCriacao()),
-                new FilmeResponse(av.getFilme().getId(), av.getFilme().getTitulo(), av.getFilme().getDiretor(), av.getFilme().getGenero(), av.getFilme().getAnoLancamento(), av.getFilme().getDuracaoMin())
+                new UsuarioResumidoResponse(av.getUsuario().getId(), av.getUsuario().getNome(), av.getUsuario().getEmail()),
+                new FilmeResumidoResponse(av.getFilme().getId(), av.getFilme().getTitulo(), av.getFilme().getGenero())
         );
     }
 }

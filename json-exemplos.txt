@@ -1,0 +1,44 @@
+### POST /usuarios
+{
+  "nome": "Mariana Silva",
+  "email": "mariana.silva@email.com",
+  "senha": "MariSilva@2024"
+}
+
+{
+  "nome": "Gustavo Pereira",
+  "email": "gustavo.pereira@email.com",
+  "senha": "Gustavo123@"
+}
+
+### POST /filmes
+{
+  "titulo": "Ainda Estou Aqui",
+  "diretor": "Walter Salles",
+  "genero": "Drama",
+  "anoLancamento": 2024,
+  "duracaoMin": 135
+}
+
+{
+  "titulo": "Emilia Pérez",
+  "diretor": "Jacques Audiard",
+  "genero": "Musical",
+  "anoLancamento": 2024,
+  "duracaoMin": 130
+}
+
+### POST /avaliacoes
+{
+  "nota": 8.5,
+  "comentario": "Filme lindo e emocionante.",
+  "usuarioId": 1,
+  "filmeId": 1
+}
+
+{
+  "nota": 3.0,
+  "comentario": "Muito ruim, nossa.",
+  "usuarioId": 2,
+  "filmeId": 2
+}
